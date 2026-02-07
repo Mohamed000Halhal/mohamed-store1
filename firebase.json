@@ -1,0 +1,17 @@
+{
+  "firestore": {
+    "rules": "firestore-rules-final.txt"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.bat",
+      "**/*.cmd",
+      "**/*.exe",
+      "**/*.sh"
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+.auth-modal .modal-content {
+    border-radius: 20px;
+}
+
+.auth-modal .modal-header {
+    border-bottom: 2px solid #e0e0e0;
+    padding: 20px 30px;
+}
+
+.auth-modal .modal-title {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #333;
+}
+
+.auth-modal .modal-body {
+    padding: 30px;
+}
+
+.auth-modal .nav-tabs {
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.auth-modal .nav-link {
+    color: #666;
+    border: none;
+    border-radius: 10px 10px 0 0;
+    padding: 12px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.auth-modal .nav-link:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.auth-modal .nav-link.active {
+    background: #333;
+    color: white;
+    border: none;
+}
+
+.social-login .btn {
+    font-weight: 500;
+    padding: 12px;
+}
+
+.divider {
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.divider::before {
+    right: 0;
+}
+
+.divider::after {
+    left: 0;
+}

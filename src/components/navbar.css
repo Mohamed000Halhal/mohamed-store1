@@ -1,0 +1,67 @@
+/* =========================
+  GENERAL RESET
+========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+    background: #f0f2f5;
+    font-family: 'Segoe UI', sans-serif;
+    padding-top: 65px;
+}
+
+.custom-navbar {
+    background: linear-gradient(
+        135deg,
+        rgb(0, 0, 0) 27%,
+        rgb(255, 254, 254) 0%,
+        rgb(255, 252, 252) 0%
+    );
+}
+
+/* Logo text */
+.navbar-brand span {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+/* Navbar links */
+.navbar-nav .nav-link {
+    font-weight: bold;
+    margin-left: 90px;
+    color: #000000;
+}
+
+/* Hover effects */
+.navbar-nav .nav-link:hover {
+    color: #0c08eb;
+}
+
+.navbar-brand span:hover {
+    color: #0c08eb;
+}
+
+/* Dropdown spacing */
+.dropdown {
+    padding-right: 20px;
+}
+
+/* Login & Cart buttons */
+.login-btn,
+.cart-btn {
+    border-radius: 8px;
+}
+/* =========================
+  RESPONSIVE
+========================== */
+@media (max-width: 768px) {
+
+     .navbar-brand span{
+        color: #000000;
+    }
+}

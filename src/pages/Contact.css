@@ -1,0 +1,26 @@
+.contact-page {
+    padding: 20px 0;
+}
+
+.contact-card {
+    transition: all 0.3s ease;
+    border: 2px solid #f0f0f0;
+}
+
+.contact-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    border-color: #333;
+}
+
+.contact-icon {
+    font-size: 3.5em;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.contact-info {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+    margin: 15px 0;
+}

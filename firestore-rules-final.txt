@@ -1,0 +1,52 @@
+// قواعد Firebase الكاملة - انسخ كل هذا الكود إلى Firebase Console
+// Firebase Console > Firestore Database > Rules > ثم الصق الكود واضغط Publish
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // قواعد الطلبات (orders)
+    match /orders/{orderId} {
+      allow read, write: if true; // يسمح لكل العمليات لأي شخص
+    }
+    
+    // قواعد الطلبات المحذوفة (deletedOrders) - مطلوبة للكود الحالي
+    match /deletedOrders/{orderId} {
+      allow read, write: if true; // يسمح لكل العمليات لأي شخص
+    }
+    
+    // قواعد tokens الأدمن للإشعارات
+    match /adminTokens/{tokenId} {
+      allow read, write: if true; // يسمح لكل العمليات لأي شخص
+    }
+    
+    // قواعد الإشعارات
+    match /notifications/{notificationId} {
+      allow read, write: if true; // يسمح لكل العمليات لأي شخص
+    }
+    
+    // قواعد إحصائيات الأدمن (عداد زوار صفحة الطلبات)
+    match /adminStats/{document=**} {
+      allow read, write: if true; // العدادات أرقام حقيقية
+    }
+    
+    // قواعد حضور الأجهزة على صفحة الأدمن (جهاز دخل +1، خرج -1 تلقائياً)
+    match /adminPresence/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // سجل الدخول: اسم الجهاز، اسم المستخدم، وقت الدخول/الخروج، مدة الجلسة، ما تم (حذف/تسليم)
+    match /adminSessionLog/{document=**} {
+      allow read, write: if true;
+    }
+    
+    // قواعد رسائل الاتصال (contacts)
+    match /contacts/{contactId} {
+      allow create: if true; // السماح بإنشاء رسائل اتصال لأي شخص
+      allow read, delete: if true; // السماح بالقراءة والحذف (لصفحة الإدارة)
+      allow update: if false; // منع التحديث
+    }
+    
+  }
+}

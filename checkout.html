@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>الدفع والطلب - Mohamed Store</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .checkout-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            border-bottom: 3px solid #e0e0e0;
+        }
+
+        .checkout-header h1 {
+            font-size: 2.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .checkout-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .checkout-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .checkout-section h2 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkout-section h2 i {
+            color: #1e3a8a;
+            font-size: 1.3em;
+        }
+
+        .cart-items-checkout {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .cart-item-checkout {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item-checkout:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-checkout:hover {
+            background: #f5f5f5;
+            padding-right: 20px;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .item-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .item-total {
+            font-weight: bold;
+            color: #1e3a8a;
+            font-size: 1.1em;
+            text-align: left;
+        }
+
+        .price-summary-checkout {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-top: 3px solid #1e3a8a;
+        }
+
+        .summary-row-checkout {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 1em;
+        }
+
+        .summary-row-checkout.total {
+            border-bottom: none;
+            padding-top: 15px;
+            border-top: 2px solid #1e3a8a;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .summary-row-checkout span:last-child {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .empty-cart-message {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            color: #999;
+        }
+
+        .empty-cart-message p {
+            font-size: 1.2em;
+            margin: 0;
+            margin-bottom: 15px;
+        }
+
+        .back-to-shop-btn {
+            background: #1e3a8a;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-shop-btn:hover {
+            background: #1a2e6d;
+            transform: translateY(-2px);
+        }
+
+        .payment-info-checkout {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 12px;
+            border-right: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+
+        .payment-info-checkout h3 {
+            color: #856404;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        .payment-info-checkout p {
+            margin: 10px 0;
+            color: #856404;
+            font-size: 0.95em;
+        }
+
+        .payment-info-checkout strong {
+            color: #e74c3c;
+        }
+
+        .checkout-form {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-form {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top" style="background: #ffffff; width: 100vw; margin-left: calc(-50vw + 50%); padding-left: calc(50vw - 50%); padding-right: calc(50vw - 50%); box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div class="container-fluid" style="padding-left: 0; padding-right: 0;">
+            <a class="navbar-brand" href="index.html" style="color: #040416; font-weight: bold; margin: 0 15px;">
+                <i class="bi bi-box2" style="margin-left: 5px; color: #1e0808;"></i>
+                Mohamed Store
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border-color: rgba(26, 26, 46, 0.3); margin-right: 15px;">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav" style="margin: 0 15px;">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html" style="color: #333; transition: all 0.3s;">الرئيسية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="services.html" style="color: #333; transition: all 0.3s;">الخدمات</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html" style="color: #333; transition: all 0.3s;">ارسل رسالة</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Content -->
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>🛒 إتمام الطلب</h1>
+            <p>تفاصيل الطلب والتسليم والدفع</p>
+        </div>
+
+        <div class="checkout-grid">
+            <!-- Cart Summary Section -->
+            <div class="checkout-section" id="cartSection">
+                <h2><i class="bi bi-basket"></i> محتويات السلة</h2>
+                
+                <div class="cart-items-checkout" id="checkoutCartItems">
+                    <p style="text-align: center; color: #999;">جاري تحميل السلة...</p>
+                </div>
+
+                <div class="price-summary-checkout">
+                    <div class="summary-row-checkout">
+                        <span>إجمالي المبلغ:</span>
+                        <span id="checkoutTotalAmount">0</span> جنيه
+                    </div>
+                    <div class="summary-row-checkout">
+                        <span>عدد القطع:</span>
+                        <span id="checkoutTotalQty">0</span>
+                    </div>
+                    <div class="summary-row-checkout">
+                        <span>العربون (200ج لكل قطعة):</span>
+                        <span id="checkoutDepositAmount">0</span> جنيه
+                    </div>
+                    <div class="summary-row-checkout total">
+                        <span>المبلغ الإجمالي:</span>
+                        <span id="checkoutFinalTotal">0</span> جنيه
+                    </div>
+                </div>
+
+                <div class="payment-info-checkout">
+                    <h3>ℹ️ معلومات الدفع</h3>
+                    <p><strong>طريقة الدفع:</strong> فودافون كاش فقط</p>
+                    <p><strong>رقم الحساب:</strong> <span style="color: #e74c3c; font-weight: bold;">01090985754</span></p>
+                    <p style="color: #e74c3c; margin-top: 15px;"><strong>⚠️ ملاحظة:</strong> يتم دفع 200ج عربون قبل الشراء والاستلام</p>
+                </div>
+            </div>
+
+            <!-- Checkout Form Section -->
+            <form id="checkoutForm" class="checkout-section checkout-form">
+                <h2><i class="bi bi-pencil-square"></i> بيانات الطلب</h2>
+
+                <div id="checkoutMessage" class="message" style="display: none; margin-bottom: 20px;"></div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutName">الاسم الكامل *</label>
+                    <input type="text" id="checkoutName" name="name" required placeholder="أدخل اسمك الكامل" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutMobile">رقم الموبايل *</label>
+                    <input type="tel" id="checkoutMobile" name="mobile" required placeholder="01XXXXXXXXX" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutGovernorate">المحافظة *</label>
+                    <select id="checkoutGovernorate" name="governorate" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif;">
+                        <option value="">-- اختر المحافظة --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutCenter">المركز *</label>
+                    <select id="checkoutCenter" name="center" required disabled style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif; background-color: #f5f5f5;">
+                        <option value="">-- اختر المحافظة أولاً --</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutAddress">العنوان التفصيلي *</label>
+                    <textarea id="checkoutAddress" name="address" rows="3" required placeholder="أدخل العنوان الكامل" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutPaymentPhone">رقم الهاتف المستخدم للدفع *</label>
+                    <input type="tel" id="checkoutPaymentPhone" name="paymentPhone" required placeholder="01XXXXXXXXX" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Cairo', sans-serif;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="checkoutScreenshot">صورة العربون (اسكرين شوت) *</label>
+                    <input type="file" id="checkoutScreenshot" name="screenshot" accept="image/*" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <small style="color: #666; display: block; margin-top: 8px;">اختر صورة لإثبات دفع العربون على فودافون كاش</small>
+                </div>
+
+                <button type="submit" class="submit-btn" style="width: 100%; padding: 14px; font-size: 1.1em; margin-top: 20px;">✓ تأكيد الطلب</button>
+            </form>
+        </div>
+
+        <!-- Back Button -->
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="index.html" class="back-to-shop-btn">
+                <i class="bi bi-arrow-right"></i> العودة للرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light pt-5" style="background: #1e3a8a; width: 100vw; margin-left: calc(-50vw + 50%); padding-left: calc(50vw - 50%); margin-top: 50px;">
+        <div class="container-fluid" style="padding-left: calc(50vw - 50%); padding-right: calc(50vw - 50%);">
+            <div class="text-center p-3 mb-0" style="background-color: transparent;">
+                <p style="color: #e0e0e0; margin: 0;">© 2026 <strong style="color: #64b5f6;">Mohamed Store</strong>. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="orders-service.js"></script>
+    <script src="script.js"></script>
+    <script src="cart-service.js"></script>
+
+    <script>
+
+        // الثوابت والدوال المطلوبة (DEPOSIT و CENTERS_BY_GOVERNORATE محددان بالفعل في script.js)
+        // تحديث واجهة الدفع
+        function updateCheckoutUI() {
+            const cart = window.cartService ? window.cartService.getCart() : [];
+            const cartItemsContainer = document.getElementById('checkoutCartItems');
+            
+            if (!cart || cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="empty-cart-message">
+                        <p>🛒 السلة فارغة!</p>
+                        <a href="index.html" class="back-to-shop-btn">اذهب للتسوق</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            let totalAmount = 0;
+            let totalQty = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalAmount += itemTotal;
+                totalQty += item.quantity;
+                
+                html += `
+                    <div class="cart-item-checkout">
+                        <div class="item-info">
+                            <h4>${item.productName}</h4>
+                            <p>السعر: ${item.price.toLocaleString('ar-EG')} جنيه</p>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                                <span style="color: #666;">الكمية:</span>
+                                <button type="button" onclick="decreaseQty('${item.productKey}')" class="qty-btn-checkout" style="width:35px;height:35px;border-radius:50%;background:#e74c3c;color:white;border:none;cursor:pointer;font-size:18px;font-weight:bold;">−</button>
+                                <span style="min-width:30px;text-align:center;font-weight:bold;">${item.quantity}</span>
+                                <button type="button" onclick="increaseQty('${item.productKey}')" class="qty-btn-checkout" style="width:35px;height:35px;border-radius:50%;background:#27ae60;color:white;border:none;cursor:pointer;font-size:18px;font-weight:bold;">+</button>
+                            </div>
+                        </div>
+                        <div class="item-total" style="text-align:left;">
+                            <div>${itemTotal.toLocaleString('ar-EG')} جنيه</div>
+                            <button type="button" onclick="removeItemFromCart('${item.productKey}')" style="color:#e74c3c;background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:8px;font-size:0.9em;">حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            cartItemsContainer.innerHTML = html;
+
+            // تحديث الملخص
+            const depositAmount = totalQty * DEPOSIT;
+            const finalTotal = totalAmount + depositAmount;
+
+            document.getElementById('checkoutTotalAmount').textContent = totalAmount.toLocaleString('ar-EG');
+            document.getElementById('checkoutTotalQty').textContent = totalQty;
+            document.getElementById('checkoutDepositAmount').textContent = depositAmount.toLocaleString('ar-EG');
+            document.getElementById('checkoutFinalTotal').textContent = finalTotal.toLocaleString('ar-EG');
+        }
+
+        // تحديث قائمة المحافظات
+        function populateGovernorates() {
+            const governorateSelect = document.getElementById('checkoutGovernorate');
+            if (!governorateSelect) return;
+
+            // مسح الاختيارات السابقة (ما عدا الأول)
+            while (governorateSelect.options.length > 1) {
+                governorateSelect.remove(1);
+            }
+
+            // إضافة المحافظات
+            Object.keys(CENTERS_BY_GOVERNORATE).forEach(gov => {
+                const option = document.createElement('option');
+                option.value = gov;
+                option.textContent = gov;
+                governorateSelect.appendChild(option);
+            });
+        }
+
+        // معالج تغيير المحافظة
+        function setupGovernorateChangeHandler() {
+            const governorateSelect = document.getElementById('checkoutGovernorate');
+            if (!governorateSelect) return;
+
+            governorateSelect.addEventListener('change', function() {
+                const centerSelect = document.getElementById('checkoutCenter');
+                const selectedGov = this.value;
+                
+                centerSelect.innerHTML = '';
+                
+                if (selectedGov && CENTERS_BY_GOVERNORATE[selectedGov]) {
+                    centerSelect.disabled = false;
+                    centerSelect.innerHTML = '<option value="">-- اختر المركز --</option>';
+                    CENTERS_BY_GOVERNORATE[selectedGov].forEach(center => {
+                        const option = document.createElement('option');
+                        option.value = center;
+                        option.textContent = center;
+                        centerSelect.appendChild(option);
+                    });
+                } else {
+                    centerSelect.disabled = true;
+                    centerSelect.innerHTML = '<option value="">-- اختر المحافظة أولاً --</option>';
+                }
+            });
+        }
+
+        // معالج إرسال النموذج
+        document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const cart = window.cartService ? window.cartService.getCart() : [];
+            if (!cart || cart.length === 0) {
+                alert('السلة فارغة!');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const screenshotFile = document.getElementById('checkoutScreenshot').files[0];
+
+            try {
+                // تحويل الصورة إلى base64
+                let screenshotBase64 = null;
+                if (screenshotFile) {
+                    screenshotBase64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = error => reject(error);
+                        reader.readAsDataURL(screenshotFile);
+                    });
+                }
+
+                // التحقق من ordersService
+                let ordersService = window.ordersService;
+                if (!ordersService && typeof window.createOrdersService === 'function') {
+                    window.createOrdersService(window);
+                    ordersService = window.ordersService;
+                }
+                
+                if (!ordersService) {
+                    alert('خدمة الطلبات غير متاحة. جاري المحاولة...');
+                    return;
+                }
+
+                const generateId = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : Date.now().toString();
+
+                let successCount = 0;
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'جاري الإرسال...';
+                submitBtn.disabled = true;
+
+                // إنشاء طلب لكل منتج
+                for (const item of cart) {
+                    const quantityNum = parseInt(item.quantity) || 1;
+                    const unitPrice = parseFloat(item.price) || 0;
+                    const totalAmount = unitPrice * quantityNum;
+                    const depositAmount = quantityNum * DEPOSIT;
+                    const totalWithDeposit = totalAmount + depositAmount;
+
+                    const order = {
+                        id: generateId(),
+                        name: (formData.get('name') || '').trim(),
+                        mobile: (formData.get('mobile') || '').trim(),
+                        governorate: (formData.get('governorate') || '').trim(),
+                        center: (formData.get('center') || '').trim(),
+                        productName: (item.productName || '').trim(),
+                        productKey: (item.productKey || '').trim(),
+                        quantity: quantityNum,
+                        address: (formData.get('address') || '').trim(),
+                        paymentPhone: (formData.get('paymentPhone') || '').trim(),
+                        depositScreenshot: screenshotBase64,
+                        unitPrice: unitPrice,
+                        totalAmount: totalAmount,
+                        depositAmount: depositAmount,
+                        totalWithDeposit: totalWithDeposit,
+                        date: new Date().toISOString(),
+                        status: 'pending',
+                        deliveryStatus: 'pending',
+                        paymentStatus: 'pending'
+                    };
+
+                    console.log('📦 طلب يتم إرساله:', order);
+                    await ordersService.saveOrder(order);
+                    successCount++;
+
+                    // إرسال إشعار
+                    if (window.notificationService && typeof window.notificationService.sendNewOrderNotification === 'function') {
+                        try {
+                            await window.notificationService.sendNewOrderNotification(order);
+                        } catch (err) {
+                            console.error('Error sending notification:', err);
+                        }
+                    }
+                }
+
+                if (successCount > 0) {
+                    alert('✓ تم إرسال الطلب بنجاح!\nسيتم التواصل معك قريباً على رقم الواتساب.');
+                    window.cartService.clearCart();
+                    this.reset();
+                    updateCheckoutUI();
+                    setTimeout(() => window.location.href = 'index.html', 2000);
+                }
+
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Error submitting order:', error);
+                alert('حدث خطأ: ' + error.message);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // دوال التحكم بالكمية
+        function increaseQty(productKey) {
+            const cart = window.cartService ? window.cartService.getCart() : [];
+            const item = cart.find(i => i.productKey === productKey);
+            if (item) {
+                window.cartService.updateQuantity(productKey, item.quantity + 1);
+                updateCheckoutUI();
+            }
+        }
+
+        function decreaseQty(productKey) {
+            const cart = window.cartService ? window.cartService.getCart() : [];
+            const item = cart.find(i => i.productKey === productKey);
+            if (item && item.quantity > 1) {
+                window.cartService.updateQuantity(productKey, item.quantity - 1);
+                updateCheckoutUI();
+            }
+        }
+
+        function removeItemFromCart(productKey) {
+            if (confirm('هل تريد حذف هذا المنتج من السلة؟')) {
+                window.cartService.removeFromCart(productKey);
+                updateCheckoutUI();
+            }
+        }
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            populateGovernorates();
+            setupGovernorateChangeHandler();
+            updateCheckoutUI();
+        });
+    </script>
+</body>
+</html>
