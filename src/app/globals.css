@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ──────────────────────────────────────── */
+:root {
+  --primary-color:    #667eea;
+  --secondary-color:  #764ba2;
+  --bg-color:         #f8fafc;
+  --navbar-color:     #ffffff;
+  --card-color:       #ffffff;
+  --footer-color:     #ffffff;
+  --accent-color:     #667eea;
+  --text-color:       #000000;
+  --border-color:     #e2e8f0;
+}
+
+.dark {
+  --bg-color:     #0f172a;
+  --text-color:   #ffffff;
+  --navbar-color: #1e293b;
+  --card-color:   #1e293b;
+  --footer-color: #0f172a;
+  --border-color: #334155;
+}
+
+/* ─── Base ───────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-color);
+  color:            var(--text-color);
+  transition:       background-color 0.4s ease, color 0.3s ease;
+  font-family:      'Cairo', 'Inter', system-ui, sans-serif;
+}
+
+/* ─── Glass ─────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px); /* Added missing property */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ─── Custom Scrollbar ───────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background:    var(--primary-color);
+  border-radius: 99px;
+}
+
+/* ─── Animations ─────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.animate-fade-up  { animation: fade-up  0.6s ease both; }
+.animate-fade-in  { animation: fade-in  0.4s ease both; }
+.animate-float    { animation: float   3s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* ─── Gradient Text ──────────────────────────────────────── */
+.gradient-text {
+  background:             linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip:         text;
+}
+
+/* ─── Skeleton shimmer ───────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}

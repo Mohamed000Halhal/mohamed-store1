@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { db, auth } from '@/lib/firebase'
+import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
 
 const CartContext = createContext()
 
@@ -13,23 +16,45 @@ export const useCart = () => {
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([])
   const [showCart, setShowCart] = useState(false)
+  const [user, setUser] = useState(null)
 
-  // Load cart from localStorage on mount
+  // Track auth state
   useEffect(() => {
-    const savedCart = localStorage.getItem('shopping_cart')
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch (error) {
-        console.error('Error loading cart:', error)
-      }
-    }
+    return onAuthStateChanged(auth, (u) => {
+      setUser(u)
+    })
   }, [])
 
-  // Save cart to localStorage whenever it changes
+  // Sync cart FROM Firestore when user logs in
   useEffect(() => {
-    localStorage.setItem('shopping_cart', JSON.stringify(cart))
-  }, [cart])
+    if (!user) {
+      // If user logs out, clear cart or keep it local? 
+      // User said "not local storage", so maybe clear it.
+      return
+    }
+
+    const unsub = onSnapshot(doc(db, 'carts', user.uid), (doc) => {
+      if (doc.exists()) {
+        setCart(doc.data().items || [])
+      }
+    })
+
+    return () => unsub()
+  }, [user])
+
+  // Sync cart TO Firestore whenever it changes
+  useEffect(() => {
+    if (user && cart.length >= 0) {
+      const saveCart = async () => {
+        try {
+          await setDoc(doc(db, 'carts', user.uid), { items: cart })
+        } catch (error) {
+          console.error('Error saving cart to Firebase:', error)
+        }
+      }
+      saveCart()
+    }
+  }, [cart, user])
 
   const addToCart = (productKey, productName, price, quantity = 1) => {
     setCart(prevCart => {
