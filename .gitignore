@@ -63,3 +63,6 @@ Thumbs.db
 # Sensitive files (auto-detected)
 node_modules
 
+
+.vercel
+.env*.local

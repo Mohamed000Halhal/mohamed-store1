@@ -17,11 +17,13 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      console.log('Attempting login with:', email)
+      const credential = await signInWithEmailAndPassword(auth, email, password)
+      console.log('Login success:', credential.user.email)
       toast.success('تم تسجيل الدخول بنجاح')
       router.push('/admin/dashboard')
     } catch (error: any) {
-      console.error(error)
+      console.error('Login Error:', error.code, error.message)
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         toast.error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني وكلمة المرور.')
       } else {
@@ -33,7 +35,7 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center p-6 transition-colors duration-500">
       <div className="w-full max-w-md">
         <div className="text-center mb-10 animate-fade-in">
           <div className="inline-flex p-4 bg-primary/10 rounded-[2rem] text-primary mb-6 shadow-xl shadow-primary/10">
@@ -43,7 +45,7 @@ export default function AdminLogin() {
           <p className="text-slate-500 font-medium">أدخل بياناتك للوصول إلى لوحة التحكم</p>
         </div>
 
-        <form onSubmit={handleLogin} className="bg-white dark:bg-slate-900 p-10 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-6">
+        <form onSubmit={handleLogin} className="bg-[var(--card-color)] p-10 rounded-[2.5rem] border border-[var(--border-color)] shadow-2xl shadow-slate-200/50 dark:shadow-none space-y-6">
           <div className="space-y-4">
             <div className="relative">
               <Mail className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -53,7 +55,7 @@ export default function AdminLogin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full pr-12 pl-4 py-4 bg-slate-50 dark:bg-slate-800/50 border-0 rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold"
+                className="w-full pr-12 pl-4 py-4 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl focus:ring-2 focus:ring-primary outline-none transition-all font-bold text-[var(--text-color)]"
               />
             </div>
             <div className="relative">

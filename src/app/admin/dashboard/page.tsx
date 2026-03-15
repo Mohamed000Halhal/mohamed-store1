@@ -2,65 +2,142 @@
 
 import React, { useState, useEffect } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, onSnapshot, query, where } from 'firebase/firestore'
-import { 
-  ShoppingBag, 
-  Users, 
-  CreditCard, 
+import { collection, onSnapshot, query, where, doc } from 'firebase/firestore'
+import { useLanguage } from '@/context/LanguageContext'
+import toast from 'react-hot-toast'
+import {
+  ShoppingBag,
+  Users,
+  CreditCard,
   TrendingUp,
   Package,
   Clock,
-  Loader2
+  Loader2,
+  Search,
+  LogOut,
+  AlertCircle,
+  DollarSign,
+  Undo2,
+  RefreshCcw,
+  X,
+  Menu,
+  Languages,
+  Sun,
+  Moon,
+  Smartphone,
+  CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  FileText
 } from 'lucide-react'
+
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    totalSales: 0,
-    activeProducts: 0,
-    todayOrders: 0
-  })
+  const [allOrdersData, setAllOrdersData] = useState<any[]>([])
+  const [activeProductsCount, setActiveProductsCount] = useState(0)
+  const [resetTimestamp, setResetTimestamp] = useState<number>(0)
+  const [startDateFormatted, setStartDateFormatted] = useState<string>('')
+  const [totalDevices, setTotalDevices] = useState(0)
 
   useEffect(() => {
-    // 1. Listen to all orders
     const unsubOrders = onSnapshot(collection(db, 'orders'), (snap) => {
-      const orders = snap.docs.map(doc => doc.data())
-      const totalSales = orders.reduce((sum, o: any) => sum + (o.totalAmount || 0), 0)
-      
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const todayOrders = orders.filter((o: any) => new Date(o.date) >= today).length
-
-      setStats(prev => ({
-        ...prev,
-        totalOrders: snap.size,
-        totalSales,
-        todayOrders
-      }))
+      const allOrders = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[]
+      setAllOrdersData(allOrders)
+    }, (err) => {
+      console.warn("Dashboard Orders Listener Permission Error:", err)
     })
 
     // 2. Listen to products
     const unsubProducts = onSnapshot(collection(db, 'products'), (snap) => {
-      setStats(prev => ({
-        ...prev,
-        activeProducts: snap.size
-      }))
+      setActiveProductsCount(snap.size)
+      setLoading(false)
+    }, (err) => {
+      console.warn("Dashboard Products Listener Permission Error:", err)
       setLoading(false)
     })
+    
+    // 3. Listen to system settings (for resetTimestamp)
+    const unsubSettings = onSnapshot(doc(db, 'system_settings', 'dashboard'), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().resetTimestamp) {
+        const ms = docSnap.data().resetTimestamp.toMillis ? docSnap.data().resetTimestamp.toMillis() : docSnap.data().resetTimestamp;
+        setResetTimestamp(ms)
+        setStartDateFormatted(new Date(ms).toLocaleDateString())
+      } else {
+        setResetTimestamp(0)
+      }
+    }, (err) => {
+      console.warn("Dashboard Settings Listener Permission Error:", err)
+    })
+
+    // 4. Listen to active devices heartbeat
+    const unsubDevices = onSnapshot(collection(db, 'active_devices'), (snap) => {
+      let activeCount = 0;
+      const now = Date.now();
+      snap.forEach(doc => {
+        const data = doc.data();
+        if (data.role === 'admin' && data.isOnline !== false) {
+           const lastSeenMs = data.lastSeen; 
+           if (typeof lastSeenMs === 'number' && (now - lastSeenMs) <= 150000) { 
+             activeCount++
+           }
+        }
+      })
+      setTotalDevices(activeCount)
+    }, (err) => {
+      console.warn("Dashboard Devices Listener Permission Error:", err)
+    })
+
+    // Active devices sweep interval to trigger re-renders to remove stale devices visually
+    const timer = setInterval(() => {
+      // Force a slight state update to re-evaluate active timers if needed, handled passively
+    }, 60000)
 
     return () => {
       unsubOrders()
       unsubProducts()
+      unsubSettings()
+      unsubDevices()
+      clearInterval(timer)
     }
   }, [])
 
-  const statConfig = [
-    { name: 'إجمالي الطلبات', value: stats.totalOrders.toString(), icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { name: 'إجمالي المبيعات', value: `${stats.totalSales.toLocaleString('ar-EG')} ج.م`, icon: CreditCard, color: 'text-green-500', bg: 'bg-green-50' },
-    { name: 'المنتجات النشطة', value: stats.activeProducts.toString(), icon: Package, color: 'text-purple-500', bg: 'bg-purple-50' },
-    { name: 'طلبات اليوم', value: stats.todayOrders.toString(), icon: Clock, color: 'text-orange-500', bg: 'bg-orange-50' },
-  ]
+  const handleResetTotalSales = async () => {
+    if (!confirm(t('admin.dashboard_total_sales_confirm'))) return
+    try {
+      const { setDoc, serverTimestamp } = await import('firebase/firestore')
+      await setDoc(doc(db, 'system_settings', 'dashboard'), {
+        resetTimestamp: serverTimestamp()
+      }, { merge: true })
+      toast.success(t('admin.dashboard_reset_success'))
+    } catch (error) {
+      console.error(error)
+      toast.error(t('admin.dashboard_reset_error'))
+    }
+  }
+
+  // Derive stats
+  const visibleOrders = allOrdersData.filter((o: any) => o.deliveryStatus !== 'registered')
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayOrders = visibleOrders.filter((o: any) => {
+    const orderDate = o.date?.toMillis ? new Date(o.date.toMillis()) : new Date(o.date)
+    return orderDate >= today
+  }).length
+  
+  const returnedOrders = visibleOrders.filter((o: any) => o.deliveryStatus === 'returned').length
+
+  // Only calculate sales for delivered orders AFTER the reset timestamp
+  const totalSales = allOrdersData
+    .filter((o: any) => {
+      if (o.deliveryStatus !== 'delivered') return false;
+      const orderTime = o.date?.toMillis ? o.date.toMillis() : (Number(o.date) || 0)
+      return orderTime >= resetTimestamp
+    })
+    .reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0)
+
+  const { t, dir } = useLanguage()
 
   if (loading) {
     return (
@@ -71,54 +148,88 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <h1 className="text-4xl font-black mb-10 text-slate-800 dark:text-white">نظرة عامة</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-        {statConfig.map((stat) => (
-          <div key={stat.name} className="relative group bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <div className={`p-4 rounded-3xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                <stat.icon size={28} />
+    <div className="animate-fade-in transition-colors duration-500 relative min-h-screen" dir={dir}>
+      {/* Content wrapper */}
+      <div className="relative z-10">
+        <h1 className="text-4xl font-black mb-10 text-[var(--heading-color)]">{t('nav.dashboard')}</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          
+          {/* Total Sales */}
+          <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-6 xl:p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center justify-between group hover:border-primary/50 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
+                <DollarSign size={28} />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{t('admin.total_sales') || 'إجمالي المبيعات'}</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{totalSales.toLocaleString()} {t('common.currency')}</h3>
+                {resetTimestamp > 0 && (
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">{t('admin.dashboard_sales_start')} {startDateFormatted}</p>
+                )}
               </div>
             </div>
-            <h3 className="text-slate-400 dark:text-slate-500 text-sm font-black uppercase tracking-widest mb-2">{stat.name}</h3>
-            <p className="text-3xl font-black text-slate-800 dark:text-white">{stat.value}</p>
+            <button 
+              onClick={handleResetTotalSales}
+              title={t('admin.dashboard_reset_title')}
+              className="p-3 bg-slate-50 hover:bg-red-50 dark:bg-slate-700/50 dark:hover:bg-red-900/40 text-slate-400 hover:text-red-500 rounded-xl transition-all shadow-sm active:scale-90 relative z-20"
+            >
+              <RefreshCcw size={18} />
+            </button>
           </div>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black">أحدث التنبيهات</h2>
-            <div className="px-4 py-1 bg-primary/10 text-primary text-xs font-black rounded-full">LIVE</div>
-          </div>
-          <div className="space-y-4">
-            {stats.totalOrders > 0 ? (
-              <p className="text-slate-500 text-sm">يتم تحديث البيانات لحظياً من قاعدة البيانات.</p>
-            ) : (
-              <div className="p-12 text-center text-slate-300">
-                <Clock size={48} className="mx-auto mb-4 opacity-20" />
-                <p>لا توجد بيانات حالياً</p>
+          {/* Active Products */}
+          <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-6 xl:p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center justify-between group hover:border-primary/50 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                <Package size={28} />
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-primary to-secondary p-8 rounded-[2.5rem] text-white shadow-2xl shadow-primary/20">
-          <h2 className="text-2xl font-black mb-4">أداء المتجر</h2>
-          <p className="text-white/80 leading-relaxed mb-6 font-medium">
-            متجرك يعمل الآن بتقنيات Next.js الحديثة. البيانات تظهر هنا لحظياً بمجرد قيام أي عميل بطلب جديد.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur p-4 rounded-2xl">
-              <div className="text-xs font-black opacity-60 mb-1 tracking-tighter">الحالة</div>
-              <div className="font-black">متصل ✓</div>
+              <div>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{t('admin.active_products')}</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{activeProductsCount}</h3>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur p-4 rounded-2xl">
-              <div className="text-xs font-black opacity-60 mb-1 tracking-tighter">السرعة</div>
-              <div className="font-black">ممتازة</div>
+          </div>
+
+          {/* Total Devices */}
+          <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-6 xl:p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center justify-between group hover:border-primary/50 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                <Smartphone size={28} />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{t('admin.total_devices') || 'عدد الأجهزة'}</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{totalDevices}</h3>
+                {resetTimestamp > 0 && (
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">{t('admin.dashboard_sales_start')} {startDateFormatted}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Orders */}
+          <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-6 xl:p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center justify-between group hover:border-primary/50 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-900/40 flex items-center justify-center text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                <Clock size={28} />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{t('admin.today_orders')}</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{todayOrders}</h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Returned Orders */}
+          <div className="bg-white/90 dark:bg-slate-800/80 backdrop-blur-md p-6 xl:p-8 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-700 shadow-xl shadow-slate-200/20 dark:shadow-none flex items-center justify-between group hover:border-primary/50 transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-900/40 flex items-center justify-center text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
+                <Undo2 size={28} />
+              </div>
+              <div>
+                <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">{t('admin.dashboard_returned_orders')}</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{returnedOrders}</h3>
+              </div>
             </div>
           </div>
         </div>

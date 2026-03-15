@@ -17,6 +17,7 @@ export default function AuthModal() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
 
   const resetForm = () => {
     setLoginEmail('')
@@ -27,6 +28,7 @@ export default function AuthModal() {
     setError('')
     setSuccess('')
     setShowPassword(false)
+    setRememberMe(true)
   }
 
   const handleClose = () => {
@@ -39,7 +41,7 @@ export default function AuthModal() {
     setError('')
     setLoading(true)
     try {
-      await login(loginEmail, loginPassword)
+      await login(loginEmail, loginPassword, rememberMe)
       handleClose()
     } catch (err: any) {
       if (err.code === 'auth/invalid-credential') {
@@ -246,6 +248,20 @@ export default function AuthModal() {
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
+
+                    <div className="flex items-center gap-2 mr-1">
+                      <input 
+                        type="checkbox" 
+                        id="rememberMe"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                      />
+                      <label htmlFor="rememberMe" className="text-sm font-bold text-slate-500 cursor-pointer">
+                        تذكرني دائماً
+                      </label>
+                    </div>
+
                     <button
                       type="submit"
                       disabled={loading}

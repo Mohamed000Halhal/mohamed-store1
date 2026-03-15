@@ -9,6 +9,9 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   User
 } from 'firebase/auth'
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
@@ -20,7 +23,7 @@ interface AuthContextType {
   setShowAuth: (v: boolean) => void
   authTab: 'login' | 'signup'
   setAuthTab: (v: 'login' | 'signup') => void
-  login: (email: string, password: string) => Promise<any>
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<any>
   signup: (email: string, password: string, name: string) => Promise<any>
   loginWithGoogle: () => Promise<any>
   logout: () => Promise<void>
@@ -68,7 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
+    await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence)
     const result = await signInWithEmailAndPassword(auth, email, password)
     await saveUserToFirestore(result.user)
     return result

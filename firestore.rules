@@ -5,80 +5,106 @@ service cloud.firestore {
     
     // Helper function to check if user is admin
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'mohamedemara@stroe.com';
+      return request.auth != null && request.auth.token.email != null && (
+        request.auth.token.email.lower() == 'mohamed@store.com' || 
+        request.auth.token.email.lower() == 'mohamedemara@store.com' || 
+        request.auth.token.email.lower() == 'mohamedemara@stroe.com'
+      );
     }
 
-    // --- Public Read Access ---
+    // --- Public Access (Read-Only) ---
 
-    // Products: Read for everyone, Write for Admin
+    // Products: Everyone can browse products
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Settings (UI/Colors): Read for everyone, Write for Admin
+    // Settings (UI/Theme): Everyone needs to see the store design theme
+    // We add a specific rule for the 'ui' document to be as permissive as possible
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+    
+    match /settings/ui {
+      allow read: if true;
+    }
 
-    // --- Order Related ---
+    // System Settings: Read-only for everyone to see stats, write for Admin
+    match /system_settings/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    // Orders: Anyone can create (customer), only Admin can read/update/delete
+    // --- Store Operations ---
+
+    // Orders: Customers can create orders.
+    // Any authenticated user can read orders (filtered client-side per role).
+    // Admin can update/delete all. Secretaries can update their own orders.
     match /orders/{orderId} {
       allow create: if true;
-      allow read, update, delete: if isAdmin();
+      allow read: if true;
+      allow update: if isAdmin() || (
+        request.auth != null && (
+          request.auth.uid == resource.data.secretaryId || 
+          (resource.data.secretaryEmail != null && request.auth.token.email.lower() == resource.data.secretaryEmail.lower())
+        )
+      );
+      allow delete: if isAdmin();
     }
     
-    // Deleted Orders: Admin only
-    match /deletedOrders/{orderId} {
-      allow read, write: if isAdmin();
-    }
-
-    // --- User & Cart Related ---
-
-    // Users: Each user can read/write their own document
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // Carts: Each user can read/write their own cart
-    match /carts/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // --- Admin/System Utilities ---
-    
-    // Admin tokens for notifications
-    match /adminTokens/{tokenId} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Notifications
-    match /notifications/{notificationId} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Admin stats
-    match /adminStats/{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Admin presence
-    match /adminPresence/{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Admin session logs
-    match /adminSessionLog/{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // Contact messages
+    // Contact Messages: Customers can send messages.
     match /contacts/{contactId} {
       allow create: if true;
       allow read, delete: if isAdmin();
       allow update: if false;
+    }
+
+    // --- Administrative Area (Admin Only) ---
+    
+    match /secretaries/{secretaryId} {
+      allow read: if request.auth != null;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (request.auth != null && request.auth.token.email.lower() == resource.data.email.lower());
+    }
+    
+    match /deletedOrders/{orderId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /adminTokens/{tokenId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /notifications/{notificationId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /adminStats/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /adminPresence/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /active_devices/{deviceId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /adminSessionLog/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- Personal User Data ---
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

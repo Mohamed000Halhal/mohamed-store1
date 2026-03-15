@@ -2,64 +2,177 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS Variables ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE (Default)
+   ═══════════════════════════════════════════════════════════════ */
 :root {
-  --primary-color:    #667eea;
-  --secondary-color:  #764ba2;
-  --bg-color:         #f8fafc;
-  --navbar-color:     #ffffff;
+  --primary-color:    #6366f1;
+  --secondary-color:  #8b5cf6;
+  --accent-color:     #6366f1;
+  --bg-color:         #eef2ff;
+  --sidebar-color:    #ffffff;
   --card-color:       #ffffff;
+  --navbar-color:     rgba(255, 255, 255, 0.92);
   --footer-color:     #ffffff;
-  --accent-color:     #667eea;
-  --text-color:       #000000;
-  --border-color:     #e2e8f0;
+  --hover-color:      #f1f5f9;
+  --text-color:       #0f172a;
+  --text-muted:       #475569;
+  --heading-color:    #020617;
+  --border-color:     #dde3ec;
+  --input-bg:         #f8fafc;
+  --shadow-sm:  0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md:  0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg:  0 10px 30px -5px rgb(0 0 0 / 0.10), 0 4px 10px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl:  0 20px 50px -10px rgb(0 0 0 / 0.12);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════════ */
 .dark {
-  --bg-color:     #0f172a;
-  --text-color:   #ffffff;
-  --navbar-color: #1e293b;
-  --card-color:   #1e293b;
-  --footer-color: #0f172a;
-  --border-color: #334155;
+  --bg-color:         #0f172a;
+  --sidebar-color:    #1e293b;
+  --card-color:       #1e293b;
+  --navbar-color:     rgba(15, 23, 42, 0.92);
+  --footer-color:     #0f172a;
+  --hover-color:      rgba(51, 65, 85, 0.50);
+  --text-color:       #f8fafc;
+  --text-muted:       #94a3b8;
+  --heading-color:    #ffffff;
+  --border-color:     #334155;
+  --input-bg:         #0f172a;
+  --shadow-sm:  0 0 #0000;
+  --shadow-md:  0 0 #0000;
+  --shadow-lg:  0 0 #0000;
+  --shadow-xl:  0 0 #0000;
 }
 
-/* ─── Base ───────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════ */
 html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg-color);
   color:            var(--text-color);
-  transition:       background-color 0.4s ease, color 0.3s ease;
+  transition:       background-color 0.35s ease, color 0.25s ease;
   font-family:      'Cairo', 'Inter', system-ui, sans-serif;
 }
 
-/* ─── Glass ─────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL OVERRIDES — Make ALL pages respond to theme in 1 press
+   Using @layer utilities so these win over Tailwind defaults
+   ═══════════════════════════════════════════════════════════════ */
+@layer utilities {
+
+  /* INPUTS & SELECT — always themed */
+  input:not([class*="bg-"]),
+  input.bg-white,
+  input.bg-slate-50,
+  input.bg-slate-100,
+  select,
+  textarea {
+    background-color: var(--input-bg) !important;
+    color:            var(--text-color) !important;
+    border-color:     var(--border-color) !important;
+  }
+
+  /* Card / white backgrounds */
+  .bg-white {
+    background-color: var(--card-color) !important;
+  }
+
+  /* Subtle inner sections */
+  .bg-slate-50 {
+    background-color: var(--input-bg) !important;
+  }
+  .bg-slate-100 {
+    background-color: var(--hover-color) !important;
+  }
+
+  /* Dark card backgrounds */
+  .dark .bg-slate-800,
+  .dark .bg-slate-900 {
+    background-color: var(--input-bg) !important;
+  }
+
+  /* Borders */
+  .border-slate-100,
+  .border-slate-200 {
+    border-color: var(--border-color) !important;
+  }
+  .dark .border-slate-700,
+  .dark .border-slate-800 {
+    border-color: var(--border-color) !important;
+  }
+
+  /* Heading text */
+  .text-slate-900 {
+    color: var(--heading-color) !important;
+  }
+  .text-slate-800 {
+    color: var(--text-color) !important;
+  }
+  .text-slate-700 {
+    color: var(--text-color) !important;
+  }
+  .text-slate-600,
+  .text-slate-500 {
+    color: var(--text-muted) !important;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     FORCE THEME COLOR ON PRIMARY CLASSES
+     ═══════════════════════════════════════════════════════════════ */
+  .bg-primary {
+    background-color: var(--primary-color) !important;
+  }
+  .text-primary {
+    color: var(--primary-color) !important;
+  }
+  .border-primary {
+    border-color: var(--primary-color) !important;
+  }
+  .ring-primary {
+    --tw-ring-color: var(--primary-color) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLASS
+   ═══════════════════════════════════════════════════════════════ */
 .glass {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
+  background:              rgba(255, 255, 255, 0.72);
+  backdrop-filter:         blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border:                  1px solid rgba(226, 232, 240, 0.7);
 }
-
+.dark .glass {
+  background:              rgba(15, 23, 42, 0.72);
+  border:                  1px solid rgba(255, 255, 255, 0.06);
+}
 .glass-dark {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px); /* Added missing property */
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background:              rgba(15, 23, 42, 0.6);
+  backdrop-filter:         blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border:                  1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ─── Custom Scrollbar ───────────────────────────────────── */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════ */
+.custom-scrollbar::-webkit-scrollbar       { width: 5px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background:    var(--primary-color);
   border-radius: 99px;
 }
 
-/* ─── Animations ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(24px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes fade-in {
@@ -67,16 +180,16 @@ body {
   to   { opacity: 1; }
 }
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-12px); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
 }
 
-.animate-fade-up  { animation: fade-up  0.6s ease both; }
-.animate-fade-in  { animation: fade-in  0.4s ease both; }
+.animate-fade-up  { animation: fade-up  0.5s ease both; }
+.animate-fade-in  { animation: fade-in  0.35s ease both; }
 .animate-float    { animation: float   3s ease-in-out infinite; }
 
 .delay-100 { animation-delay: 0.1s; }
@@ -85,17 +198,25 @@ body {
 .delay-400 { animation-delay: 0.4s; }
 .delay-500 { animation-delay: 0.5s; }
 
-/* ─── Gradient Text ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   GRADIENT TEXT
+   ═══════════════════════════════════════════════════════════════ */
 .gradient-text {
-  background:             linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background:              linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip:         text;
 }
 
-/* ─── Skeleton shimmer ───────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   SKELETON
+   ═══════════════════════════════════════════════════════════════ */
 .skeleton {
-  background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+  background:      linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation:       shimmer 1.5s infinite;
+}
+.dark .skeleton {
+  background:      linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
 }

@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   Palette,
   UserCog,
+  Users,
   Store,
   Menu,
   X
@@ -19,30 +20,35 @@ import {
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import ThemeToggle from '@/components/ThemeToggle'
-
-const navItems = [
-  { label: 'لوحة البيانات',   icon: LayoutDashboard, href: '/admin/dashboard' },
-  { label: 'المتجر',           icon: Store,            href: '/' },
-  { label: 'الطلبات',          icon: ShoppingBag,      href: '/admin/orders' },
-  { label: 'المنتجات',         icon: Package,          href: '/admin/products' },
-  { label: 'تخصيص الواجهة',   icon: Palette,          href: '/admin/ui-settings' },
-  { label: 'إعدادات الحساب',  icon: UserCog,          href: '/admin/profile' },
-]
+import LanguageToggle from '@/components/LanguageToggle'
+import ThemePalette from '@/components/ThemePalette'
+import { useLanguage } from '@/context/LanguageContext'
 
 export default function AdminSidebar() {
-  const [open, setOpen] = useState(true)        // desktop expanded/collapsed
-  const [mobileOpen, setMobileOpen] = useState(false)  // mobile overlay
+  const { t, dir } = useLanguage()
+  const [open, setOpen] = useState(true)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const pathname  = usePathname()
   const router    = useRouter()
 
+  const navItems = [
+    { label: t('nav.dashboard'),   icon: LayoutDashboard, href: '/admin/dashboard' },
+    { label: t('nav.orders'),      icon: ShoppingBag,      href: '/admin/orders' },
+    { label: 'طلبات تم تسليمها',   icon: Package,          href: '/admin/delivered' },
+    { label: 'الطلبات المرتجعة',   icon: Package,          href: '/admin/returned' },
+    { label: t('nav.secretaries'), icon: Users,            href: '/admin/secretaries' },
+    { label: t('nav.ui_settings'), icon: Palette,          href: '/admin/ui-settings' },
+    { label: t('nav.profile'),     icon: UserCog,          href: '/admin/profile' },
+  ]
+
   const handleLogout = async () => {
-    if (window.confirm('هل تريد تسجيل الخروج؟')) {
+    if (window.confirm(t('common.confirm_logout'))) {
       await signOut(auth)
       router.push('/admin/login')
     }
   }
 
-  /* ─── shared nav list ──────────────────────────────────────── */
+  /* ─── Nav List ─────────────────────────────────────────────── */
   const NavList = ({ closeMobile }: { closeMobile?: boolean }) => (
     <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
       {navItems.map(({ label, icon: Icon, href }) => {
@@ -53,13 +59,19 @@ export default function AdminSidebar() {
             href={href}
             onClick={() => closeMobile && setMobileOpen(false)}
             className={[
-              'flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all',
+              'flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all duration-200 group',
               active
-                ? 'bg-[var(--primary-color)] text-white shadow-lg'
-                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-white'
+                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                : 'hover:text-primary'
             ].join(' ')}
+            style={!active ? {
+              color: 'var(--text-muted)',
+              backgroundColor: 'transparent',
+            } : {}}
+            onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--hover-color)' }}
+            onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent' }}
           >
-            <Icon size={20} className="shrink-0" />
+            <Icon size={20} className={`shrink-0 transition-transform ${active ? '' : 'group-hover:scale-110'}`} />
             {(!closeMobile ? open : true) && (
               <span className="truncate">{label}</span>
             )}
@@ -69,70 +81,116 @@ export default function AdminSidebar() {
     </nav>
   )
 
-  /* ─── user strip + logout ──────────────────────────────────── */
+  /* ─── Footer ─────────────────────────────────────────────────── */
   const Footer = ({ closeMobile }: { closeMobile?: boolean }) => (
-    <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+    <div className="p-4 space-y-2" style={{ borderTop: '1px solid var(--border-color)' }}>
+      {(!closeMobile ? open : true) && (
+        <div className="flex flex-col gap-2 mb-4 p-2 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between px-2">
+            <span className="text-xs font-bold text-slate-500">الإعدادات</span>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
+          </div>
+          <ThemePalette />
+        </div>
+      )}
+
       {open && (
-        <div className="flex items-center gap-3 px-2 mb-3">
-          <div className="w-9 h-9 rounded-full bg-[var(--primary-color)]/10 flex items-center justify-center text-[var(--primary-color)]">
+        <div className="flex items-center gap-3 px-2 mb-3 mt-4">
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <UserCog size={18} />
           </div>
           <div>
-            <p className="text-sm font-bold truncate max-w-[120px]">
+            <p className="text-sm font-bold truncate max-w-[120px]" style={{ color: 'var(--text-color)' }}>
               {auth.currentUser?.email?.split('@')[0] ?? 'Admin'}
             </p>
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest">Admin</p>
+            <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: 'var(--text-muted)' }}>Admin Panel</p>
           </div>
         </div>
       )}
       <button
         onClick={handleLogout}
-        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition-all"
+        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 font-bold transition-all hover:bg-red-50"
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(239,68,68,0.08)'}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
       >
-        <LogOut size={20} className="shrink-0" />
-        {(!closeMobile ? open : true) && <span>خروج</span>}
+        <LogOut size={20} className={`shrink-0 ${dir === 'rtl' ? '' : 'rotate-180'}`} />
+        {(!closeMobile ? open : true) && <span>{t('common.logout')}</span>}
       </button>
     </div>
   )
 
-  /* ─── header strip ─────────────────────────────────────────── */
+  /* ─── Sidebar Header ─────────────────────────────────────────── */
   const Header = () => (
-    <div className="flex items-center justify-between h-20 px-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+    <div className="flex items-center justify-between h-20 px-4 shrink-0" style={{ borderBottom: '1px solid var(--border-color)' }}>
       <div className="flex items-center gap-2">
         {open && (
           <>
-            <div className="p-2 rounded-xl bg-[var(--primary-color)]">
-              <Store size={20} className="text-white" />
+            <div className="p-2 rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+              <Store size={20} />
             </div>
-            <span className="font-black text-lg text-[var(--primary-color)]">Admin Panel</span>
+            <span className="font-extrabold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Admin Panel</span>
           </>
         )}
       </div>
-      
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        {/* Desktop collapse toggle */}
+
+      <div className="flex items-center gap-1.5">
         <button
           onClick={() => setOpen(p => !p)}
-          className="hidden lg:flex p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-all"
+          className="hidden lg:flex p-2 rounded-xl transition-all"
+          style={{ color: 'var(--text-muted)' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--hover-color)'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
         >
-          {open ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {open
+            ? (dir === 'rtl' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />)
+            : (dir === 'rtl' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />)
+          }
         </button>
       </div>
     </div>
   )
 
+  /* ─── Sidebar base styles ────────────────────────────────────── */
+  const sidebarStyle: React.CSSProperties = {
+    backgroundColor: 'var(--sidebar-color)',
+    borderColor:     'var(--border-color)',
+  }
+
   return (
     <>
-      {/* ─── Mobile Hamburger ─────────────────────────────── */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 right-4 z-[60] p-3 bg-[var(--primary-color)] text-white rounded-xl shadow-lg shadow-[var(--primary-color)]/30"
+      {/* Mobile Top Bar */}
+      <div
+        className="lg:hidden fixed top-0 left-0 right-0 h-16 z-[50] px-4 flex items-center justify-between"
+        style={{
+          backgroundColor: 'var(--navbar-color)',
+          borderBottom:    '1px solid var(--border-color)',
+          backdropFilter:  'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow:       'var(--shadow-sm)',
+        }}
+        dir={dir}
       >
-        <Menu size={22} />
-      </button>
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-primary shadow-md shadow-primary/20">
+            <Store size={18} className="text-white" />
+          </div>
+          <span className="font-black text-primary tracking-wide">Admin Panel</span>
+        </div>
 
-      {/* ─── Mobile Overlay ───────────────────────────────── */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="p-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-xl transition-colors"
+          >
+            <Menu size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm"
@@ -140,20 +198,34 @@ export default function AdminSidebar() {
         />
       )}
 
-      {/* ─── Mobile Drawer ────────────────────────────────── */}
-      <aside className={[
-        'lg:hidden fixed top-0 right-0 h-full z-[80] w-72 bg-white dark:bg-slate-900 shadow-2xl',
-        'flex flex-col transition-transform duration-300',
-        mobileOpen ? 'translate-x-0' : 'translate-x-full'
-      ].join(' ')}>
-        <div className="flex items-center justify-between h-20 px-4 border-b border-slate-100 dark:border-slate-800">
+      {/* Mobile Drawer */}
+      <aside
+        className={[
+          `lg:hidden fixed top-0 ${dir === 'rtl' ? 'right-0' : 'left-0'} h-full z-[80] w-72`,
+          `border-${dir === 'rtl' ? 'l' : 'r'} flex flex-col transition-transform duration-300`,
+          mobileOpen ? 'translate-x-0' : (dir === 'rtl' ? 'translate-x-full' : '-translate-x-full')
+        ].join(' ')}
+        style={{
+          ...sidebarStyle,
+          boxShadow: '0 0 40px rgba(0,0,0,0.18)',
+          backdropFilter: 'blur(12px)',
+        }}
+        dir={dir}
+      >
+        <div className="flex items-center justify-between h-20 px-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-[var(--primary-color)]">
+            <div className="p-2 rounded-xl bg-primary shadow-lg shadow-primary/20">
               <Store size={20} className="text-white" />
             </div>
-            <span className="font-black text-lg text-[var(--primary-color)]">Admin Panel</span>
+            <span className="font-black text-lg text-primary">Admin Panel</span>
           </div>
-          <button onClick={() => setMobileOpen(false)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500">
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="p-2 rounded-xl transition-colors"
+            style={{ color: 'var(--text-muted)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--hover-color)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
+          >
             <X size={20} />
           </button>
         </div>
@@ -161,13 +233,20 @@ export default function AdminSidebar() {
         <Footer closeMobile />
       </aside>
 
-      {/* ─── Desktop Sidebar ──────────────────────────────── */}
-      <aside className={[
-        'hidden lg:flex flex-col fixed top-0 right-0 h-full z-40',
-        'bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-xl',
-        'transition-all duration-300',
-        open ? 'w-64' : 'w-20'
-      ].join(' ')}>
+      {/* Desktop Sidebar */}
+      <aside
+        className={[
+          `hidden lg:flex flex-col fixed top-0 ${dir === 'rtl' ? 'right-0' : 'left-0'} h-full z-40`,
+          `border-${dir === 'rtl' ? 'l' : 'r'}`,
+          'transition-all duration-300',
+          open ? 'w-64' : 'w-20'
+        ].join(' ')}
+        style={{
+          ...sidebarStyle,
+          boxShadow: 'var(--shadow-xl)',
+        }}
+        dir={dir}
+      >
         <Header />
         <NavList />
         <Footer />
