@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { db, auth } from '@/lib/firebase'
-import { supabase } from '@/lib/supabase'
+import { supabase, getProfileImageUrl } from '@/lib/supabase'
 import { 
   collection, 
   query, 
@@ -238,7 +238,7 @@ export default function SecretaryProfilePage() {
             <div className="w-32 h-32 rounded-[2rem] bg-white/20 backdrop-blur-md border-4 border-white/30 overflow-hidden shadow-2xl flex items-center justify-center">
               {profileImage ? (
                 <img 
-                  src={profileImage} 
+                  src={getProfileImageUrl(profileImage) || undefined} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />

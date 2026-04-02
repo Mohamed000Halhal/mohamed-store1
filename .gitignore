@@ -66,3 +66,14 @@ node_modules
 
 .vercel
 .env*.local
+
+# Next.js
+.next/
+out/
+
+# Production
+build/
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts

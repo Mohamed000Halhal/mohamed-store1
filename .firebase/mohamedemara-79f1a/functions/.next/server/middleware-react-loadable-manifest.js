@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST='{"app\\\\admin\\\\dashboard\\\\page.tsx -> firebase/firestore":{"id":5978,"files":[]},"context\\\\ThemeContext.tsx -> @/lib/firebase":{"id":6410,"files":[]}}';

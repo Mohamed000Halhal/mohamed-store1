@@ -42,6 +42,7 @@ import {
   reauthenticateWithCredential
 } from 'firebase/auth'
 import { initializeApp, deleteApp, getApps } from 'firebase/app'
+import { getProfileImageUrl } from '@/lib/supabase'
 import { useLanguage } from '@/context/LanguageContext'
 import { Edit2, Eye, EyeOff } from 'lucide-react'
 
@@ -479,7 +480,7 @@ export default function SecretariesPage() {
                 <div className="relative">
                   <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-black text-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors overflow-hidden">
                     {sec.profileImage ? (
-                      <img src={sec.profileImage} alt={sec.name} className="w-full h-full object-cover" />
+                      <img src={getProfileImageUrl(sec.profileImage) || undefined} alt={sec.name} className="w-full h-full object-cover" />
                     ) : (
                       sec.name[0]
                     )}
